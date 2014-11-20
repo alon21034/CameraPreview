@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 public class MainActivity extends Activity {
 
@@ -22,14 +21,9 @@ public class MainActivity extends Activity {
 		        WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.activity_main);
+		
+		mPreview = (CameraPreview) findViewById(R.id.main_camera_preview);
 
-		// Create an instance of Camera
-		mCamera = getCameraInstance();
-
-		// Create our Preview view and set it as the content of our activity.
-		mPreview = new CameraPreview(this, mCamera);
-		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-		preview.addView(mPreview);
 	}
 
 	@Override
@@ -47,5 +41,28 @@ public class MainActivity extends Activity {
 			// Camera is not available (in use or does not exist)
 		}
 		return c; // returns null if camera is unavailable
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		// Open the default i.e. the first rear facing camera.
+		// Create an instance of Camera
+		mCamera = getCameraInstance();
+		mPreview.setCamera(mCamera);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		// Because the Camera object is a shared resource, it's very
+		// important to release it when the activity is paused.
+		if (mCamera != null) {
+			mPreview.setCamera(null);
+			mCamera.release();
+			mCamera = null;
+		}
 	}
 }
